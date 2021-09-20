@@ -13,9 +13,6 @@ public class LFSR {
         this.tap = tap;
     }
 
-
-
-
     private int shift(){
         int bit = getBit(length-1);
         int tapBit = getBit(tap);
