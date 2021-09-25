@@ -16,11 +16,15 @@ public class ImageFun {
     public static void main(String[] args) throws InterruptedException {
 
         JFrame frame = new JFrame();
-        Canvas canvas = new CustomCanvas();
+        CustomCanvas canvas = new CustomCanvas();
         frame.add(canvas);
 
-
-
+        BufferedImage image = null;
+        try {
+            image = ImageIO.read(new File("res/images/ninetails.jpg"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -28,7 +32,7 @@ public class ImageFun {
         frame.setVisible(true);
 
         Dimension size = Toolkit. getDefaultToolkit(). getScreenSize();
-        int maxx = size.width - 334, maxy = size.height - 131;
+        int maxx = size.width - image.getWidth(), maxy = size.height - image.getHeight();
         float x = 0, y = 0, mx = 1, my = 1;
 
         long start = System.currentTimeMillis();
@@ -37,6 +41,7 @@ public class ImageFun {
         while(true){
             start = System.currentTimeMillis();
             frame.setSize(295,223);
+            canvas.prepImage();
             canvas.repaint();
 
             float delay = 16.8f - (System.currentTimeMillis() - start) + offset;
@@ -74,23 +79,22 @@ public class ImageFun {
     static class CustomCanvas extends Canvas{
 
 
-        BufferedImage image, buffer;
-        float offset = 0;
+        BufferedImage image, buffer, og;
+        float offset = 0.01f;
 
-        public void prepImage(){
-
-        }
-
-        @Override
-        public void paint(Graphics g) {
-            buffer = new BufferedImage(295, 223, BufferedImage.TYPE_4BYTE_ABGR);
-            Graphics g2 = buffer.getGraphics();
+        public CustomCanvas(){
 
             try {
                 image = ImageIO.read(new File("res/images/ninetails.jpg"));
+                og = ImageIO.read(new File("res/images/ninetails.jpg"));
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            buffer = new BufferedImage(295, 223, BufferedImage.TYPE_4BYTE_ABGR);
+
+
+
+
             for (int j = 0; j < image.getHeight(); j++) {
                 for (int i = 0; i < image.getWidth(); i++) {
                     int rc = (image.getRGB(i,j)>>16) & 0xFF;
@@ -100,12 +104,36 @@ public class ImageFun {
                     float[] hsb = new float[3];
                     hsb = Color.RGBtoHSB(rc, gc, bc, hsb);
 
-                    int c = Color.HSBtoRGB((hsb[0] + (offset + (j / 1000.0f) - (i / 1000.0f))), hsb[1], hsb[2]);
+                    int c = Color.HSBtoRGB((hsb[0]  + (i / 1000.0f)), hsb[1], hsb[2]);
+
+                    image.setRGB(i, j, c);
+                    og.setRGB(i,j,c);
+                }
+            }
+        }
+
+        public void prepImage(){
+
+            for (int j = 0; j < image.getHeight(); j++) {
+                for (int i = 0; i < image.getWidth(); i++) {
+                    int rc = (og.getRGB(i,j)>>16) & 0xFF;
+                    int gc = (og.getRGB(i,j)>>8) & 0xFF;
+                    int bc = (og.getRGB(i,j)) & 0xFF;
+
+                    float[] hsb = new float[3];
+                    hsb = Color.RGBtoHSB(rc, gc, bc, hsb);
+
+                    int c = Color.HSBtoRGB((hsb[0] + offset), hsb[1], hsb[2]);
 
                     image.setRGB(i, j, c);
                 }
             }
-            offset += 0.02f;
+            offset+=0.01f;
+        }
+
+        @Override
+        public void paint(Graphics g) {
+            Graphics g2 = buffer.getGraphics();
             g2.drawImage(image, 0, 0, null);
             g.drawImage(buffer, 0,0, null);
         }
