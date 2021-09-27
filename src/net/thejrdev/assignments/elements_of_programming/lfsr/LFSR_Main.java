@@ -1,4 +1,4 @@
-package net.thejrdev.assignments.elements_of_programming.dry_run.lfsr;
+package net.thejrdev.assignments.elements_of_programming.lfsr;
 
 public class LFSR_Main {
 
