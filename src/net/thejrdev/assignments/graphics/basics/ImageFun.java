@@ -39,14 +39,22 @@ public class ImageFun {
 
         long start;
         float offset = 0;
+        int skipCount = 0, skips = 3;
 
         while(true){
             start = System.currentTimeMillis();
             frame.setSize(295,223);
-            canvas.prepImage();
-            canvas.repaint();
+            if(skipCount % skips == 0) {
+                canvas.prepImage();
+                canvas.repaint();
+                skipCount %= skips;
+            }
+            skipCount++;
 
             float delay = a - (System.currentTimeMillis() - start) + offset;
+            if(offset != 0){
+                offset = 0;
+            }
 
             Thread.sleep((int)( delay < 0 ? 0 : delay));
             if(delay < 0){
@@ -82,6 +90,7 @@ public class ImageFun {
 
 
         BufferedImage image, buffer, og;
+        Graphics g2;
         float offset = 0;
 
         public CustomCanvas(){
@@ -96,7 +105,7 @@ public class ImageFun {
                 e.printStackTrace();
             }
             buffer = new BufferedImage(295, 223, BufferedImage.TYPE_4BYTE_ABGR);
-
+            g2 = buffer.getGraphics();
             for (int j = 0; j < og.getHeight(); j++) {
                 for (int i = 0; i < og.getWidth(); i++) {
                     int rc = (og.getRGB(i,j)>>16) & 0xFF;
@@ -106,7 +115,7 @@ public class ImageFun {
                     float[] hsb = new float[3];
                     hsb = Color.RGBtoHSB(rc, gc, bc, hsb);
 
-                    int c = Color.HSBtoRGB((hsb[0] + ((float)i)/og.getWidth()) - ((float)j)/og.getHeight(), hsb[1], hsb[2]);
+                    int c = Color.HSBtoRGB((hsb[0] + ((float)i)/og.getWidth()) - ((float)j)/og.getHeight(), hsb[1] * 1.3f, hsb[2]);
 
                     og.setRGB(i, j, c);
                 }
@@ -123,21 +132,17 @@ public class ImageFun {
                     float[] hsb = new float[3];
                     hsb = Color.RGBtoHSB(rc, gc, bc, hsb);
 
-                    int c = Color.HSBtoRGB((hsb[0] + offset), hsb[1] * 1.0f, hsb[2]);
+                    int c = Color.HSBtoRGB((hsb[0] + offset), hsb[1], hsb[2]);
 
                     image.setRGB(i, j, c);
                 }
             }
-            offset += 0.02f;
-
+            offset += 0.03f;
+            g2.drawImage(image, 0, 0, null);
         }
 
         @Override
         public void paint(Graphics g) {
-            Graphics g2 = buffer.getGraphics();
-
-
-            g2.drawImage(image, 0, 0, null);
             g.drawImage(buffer, 0,0, null);
         }
 
