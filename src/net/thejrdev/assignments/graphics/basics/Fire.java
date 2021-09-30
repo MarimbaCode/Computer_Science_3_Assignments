@@ -8,13 +8,13 @@ public class Fire {
 
     public static void main(String[] args) throws InterruptedException {
 
-        int width = 500;
-        int height = 200;
+        int width = 1200;
+        int height = 400;
 
         Picture p = new Picture(width, height);
 
         float[][] color = new float[height + 2][width + 2];
-        Color[] pal = new Color[10000];
+        Color[] pal = new Color[500];
 
         for (int i = 0; i < pal.length; i++) {
 
@@ -34,26 +34,28 @@ public class Fire {
         }
         p2.show();
 
+        for (int i = 0; i < color[0].length; i++) {
+            color[color.length - 2][i] = (int) ((color[0].length/2) * (-Math.cos(Math.PI * ((float)i / color[0].length) * 2) + 1));
+        }
 
         while(true){
 
-//            for (int i = 0; i < color[0].length; i++) {
-//                color[color.length - 1][i] = (int) (Math.random() * pal.length/4) + 3 * pal.length/4;
-//            }            for (int i = 0; i < color[0].length; i++) {
-//                color[color.length - 2][i] = (int) (Math.random() * pal.length/4) + 3 * pal.length/4;
-//            }
-
             for (int i = 0; i < color[0].length; i++) {
-                color[color.length - 1][i] = (int) (Math.random() * pal.length);
-            }            for (int i = 0; i < color[0].length; i++) {
-                color[color.length - 2][i] = (int) (Math.random() * pal.length);
+                color[color.length - 1][i] = (int) (Math.random() * pal.length/4f) + 3 * pal.length/4f;
             }
+
+//            for (int i = 0; i < color[0].length; i++) {
+//                color[color.length - 1][i] = (int) (Math.random() * pal.length);
+//            }
+//            for (int i = 0; i < color[0].length; i++) {
+//                color[color.length - 2][i] = (int) (Math.random() * pal.length);
+//            }
 
             for (int i = 0; i < color.length-2; i++) {
                 for (int j = 1; j < color[i].length-2; j++) {
 
-                    double avg = color[i+1][j] * 0.48;
-                    avg += color[i+1][j-1]* (0.2) + color[i+1][j+1] * (0.2) ;
+                    double avg = color[i+1][j] * (0.399 * (Math.random()/4 +0.875));
+                    avg += color[i+1][j-1] * (0.25) + color[i+1][j+1] * (0.25) ;
                     avg += color[i+2][j] * 0.1;
                     int newavg = (int) avg;
                     if(newavg >= pal.length){
@@ -76,7 +78,7 @@ public class Fire {
                 }
             }
             p.show();
-            Thread.sleep(10);
+            Thread.sleep(0);
         }
 
 
