@@ -1,13 +1,9 @@
-package net.thejrdev.assignments.graphics.basics;
-
-import edu.princeton.cs.algs4.Picture;
+package net.thejrdev.assignments.cycle_two;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.plaf.TableHeaderUI;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.io.File;
 import java.io.IOException;
 

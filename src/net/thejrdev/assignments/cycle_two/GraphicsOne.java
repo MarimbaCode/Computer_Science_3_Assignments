@@ -1,9 +1,7 @@
-package net.thejrdev.assignments.graphics.basics;
+package net.thejrdev.assignments.cycle_two;
 
-import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.Picture;
 
-import javax.swing.*;
 import java.awt.*;
 
 public class GraphicsOne {
