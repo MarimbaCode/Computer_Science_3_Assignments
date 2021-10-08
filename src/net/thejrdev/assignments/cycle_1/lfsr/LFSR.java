@@ -1,4 +1,4 @@
-package net.thejrdev.assignments.cycle_one.lfsr;
+package net.thejrdev.assignments.cycle_1.lfsr;
 
 public class LFSR {
 
@@ -40,7 +40,7 @@ public class LFSR {
             res += bit;
             sb.append(bit);
         }
-        System.out.println(sb.toString());
+        System.out.println(sb);
         return res;
     }
 

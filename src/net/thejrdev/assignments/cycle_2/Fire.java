@@ -1,4 +1,4 @@
-package net.thejrdev.assignments.cycle_two;
+package net.thejrdev.assignments.cycle_2;
 
 import edu.princeton.cs.algs4.Picture;
 
@@ -13,7 +13,7 @@ public class Fire {
 
         Picture p = new Picture(width, height);
 
-        float[][] color = new float[height + 2][width + 2], sparks = new float[height + 2][width + 2];;
+        float[][] color = new float[height + 2][width + 2], sparks = new float[height + 2][width + 2];
         Color[] pal = new Color[1000];
 
         for (int i = 0; i < pal.length; i++) {

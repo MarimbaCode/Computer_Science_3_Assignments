@@ -1,4 +1,4 @@
-package net.thejrdev.assignments.cycle_one.lfsr;
+package net.thejrdev.assignments.cycle_1.lfsr;
 
 public class LFSR_Main {
 

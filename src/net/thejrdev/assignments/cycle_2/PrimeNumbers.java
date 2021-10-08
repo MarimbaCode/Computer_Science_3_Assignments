@@ -1,4 +1,4 @@
-package net.thejrdev.assignments.cycle_three;
+package net.thejrdev.assignments.cycle_2;
 
 import java.util.ArrayList;
 import java.util.Arrays;

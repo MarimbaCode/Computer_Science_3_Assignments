@@ -1,4 +1,4 @@
-package net.thejrdev.assignments.cycle_two;
+package net.thejrdev.assignments.cycle_2;
 
 import edu.princeton.cs.algs4.Picture;
 
