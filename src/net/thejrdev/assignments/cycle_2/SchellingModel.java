@@ -14,48 +14,54 @@ public class SchellingModel {
 
     static Agent[][] model;
     static Picture p;
+    static int scale;
 
-
-    public void init(double populationPercent, int agentTypes, double happinessReq){
+    public void init(double populationPercent, int agentTypes, double tolerance, double happinessReq, int width, int height, int scale) {
 
         Agent.happinessReq = happinessReq;
-        model = new Agent[100][100];
+        Agent.typeTotal = agentTypes;
+        model = new Agent[width][height];
+        SchellingModel.scale = scale;
+        Agent.tolerance = tolerance;
 
         for (int i = 0; i < model.length; i++) {
             for (int j = 0; j < model[0].length; j++) {
-                if(Math.random() > (1-(populationPercent))){
-                    model[i][j] = new Agent(j,i, (int)(Math.random() * agentTypes));
+                if (Math.random() > (1 - (populationPercent))) {
+                    model[i][j] = new Agent(j, i, (int) (Math.random() * agentTypes));
+                } else {
+                    Agent.open.add(new int[]{j, i});
                 }
             }
         }
-        p = new Picture(400,400);
+        p = new Picture(width * scale, height * scale);
 
 
     }
 
 
     public void modelSeg() throws InterruptedException {
-        while(true){
+        draw();
+        Thread.sleep(2000);
+        while (true) {
             Agent.moveAll();
             draw();
+            Thread.sleep(0);
         }
-
 
 
     }
 
-    public void draw(){
+    public void draw() {
 
         for (int i = 0; i < p.height(); i++) {
             for (int j = 0; j < p.width(); j++) {
-                Agent agent = model[i/4][j/4];
-                if(agent == null){
-                    p.set(j,i,Color.black);
-                }else if(agent.type == 0){
-                    p.set(j,i, Color.red);
-                }else if(agent.type == 1){
-                    p.set(j,i,Color.CYAN);
+                Agent agent = model[i/scale][j/scale];
+                if (agent == null) {
+                    p.set(j, i, Color.black);
+                }else {
+                    p.set(j, i, Color.getHSBColor(agent.type / (float) Agent.typeTotal, 1, agent.happy ? 1:0.5f));
                 }
+
             }
         }
         p.show();
@@ -63,10 +69,13 @@ public class SchellingModel {
     }
 
 
-    static class Agent{
+    static class Agent {
 
         static double happinessReq;
+        static int typeTotal;
+        static double tolerance;
         static List<Agent> agents = new ArrayList<>();
+        static List<int[]> open = new ArrayList<>();
 
         int x;
         int y;
@@ -82,101 +91,91 @@ public class SchellingModel {
             agents.add(this);
         }
 
-        public void check(){
+        public void check() {
             Agent[] others = getOthers(this);
             double h = 0;
-            for(Agent other: others){
-                if(other.type == this.type){
+            for (Agent other : others) {
+
+                int diff = other.type - this.type;
+
+                if (Math.abs(diff) <= typeTotal*tolerance || diff >= typeTotal - (typeTotal*tolerance)) {
                     h++;
                 }
             }
 
-            h /= 8;
+            h /= others.length;
             happy = h >= happinessReq;
 
         }
 
-        public void move(){
+        public void move() {
 
-            int[][] allMoves = findMoves(this);
-            if(allMoves.length == 0){return;}
-            int[] moves = allMoves[(int)(allMoves.length * Math.random())];
-            if(moves != null){
-                model[this.y][this.x] = null;
-                model[moves[0]][moves[1]] = this;
-                this.x = moves[1];
-                this.y = moves[0];
-            }
+            int[] moves = open.get((int) (Math.random() * open.size()));
+            model[this.y][this.x] = null;
+            model[moves[1]][moves[0]] = this;
+            open.add(new int[]{this.x, this.y});
+            this.x = moves[0];
+            this.y = moves[1];
+            open.remove(moves);
+
 
         }
 
-        static void checkAll(){
-            for (Agent a: agents){
+        static void checkAll() {
+            for (Agent a : agents) {
                 a.check();
             }
         }
 
-        static void moveAll(){
-            for(Agent agent: agents){
+        static void moveAll() {
+            for (Agent agent : agents) {
                 agent.check();
-                if(!agent.happy){
+                if (!agent.happy) {
                     agent.move();
                 }
             }
         }
 
-        static Agent[] getOthers(Agent agent){
+        static Agent[] getOthers(Agent agent) {
 
             List<Agent> others = new ArrayList<>();
-            for(int[] offset: new int[][]{
-                    {1,0},
-                    {0,1},
-                    {-1,0},
-                    {0,-1},
-                    {1,1},
-                    {-1,1},
-                    {-1,1},
-                    {-1,-1}
-            }){
-                int offsetX = (agent.x + model[0].length + offset[1])%model[0].length;
-                int offsetY = (agent.y + model.length + offset[0])%model.length;
-                if(model[offsetY][offsetX] == null){continue;}
+            for (int[] offset : new int[][]{
+                    {1, 0},
+                    {0, 1},
+                    {-1, 0},
+                    {0, -1},
+                    {1, 1},
+                    {-1, 1},
+                    {-1, 1},
+                    {-1, -1}
+            }) {
+                int offsetX = (agent.x + model[0].length + offset[1]) % model[0].length;
+                int offsetY = (agent.y + model.length + offset[0]) % model.length;
+                if (model[offsetY][offsetX] == null) {
+                    continue;
+                }
                 others.add(model[offsetY][offsetX]);
             }
             return others.toArray(Agent[]::new);
         }
-
-        static int[][] findMoves(Agent agent){
-            List<int[]> moves = new ArrayList<>();
-            for(int[] offset: new int[][]{
-                    {1,0},
-                    {0,1},
-                    {-1,0},
-                    {0,-1},
-                    {1,1},
-                    {-1,1},
-                    {-1,1},
-                    {-1,-1}
-            }){
-                int offsetX = (agent.x + model[0].length + offset[1])%model[0].length;
-                int offsetY = (agent.y + model.length + offset[0])%model.length;
-
-                if(model[offsetY][offsetX] == null){
-                    moves.add(new int[]{offsetY,offsetX});
-                }
-            }
-            return moves.toArray(int[][]::new);
-        }
     }
-
 
     public static void main(String[] args) throws InterruptedException {
 
         SchellingModel model = new SchellingModel();
-        model.init(0.5, 2, 0.5);
+        model.init(0.98, 300, 0.11,0.5, 200,200, 4);
 
         model.modelSeg();
 
 
     }
 }
+/*
+
+Cool settings
+Agents: 100
+Tolerance: 0.1
+Size: 200x200
+
+
+ */
