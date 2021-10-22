@@ -13,7 +13,7 @@ public class ImageFun {
 
         JFrame frame = new JFrame();
         CustomCanvas canvas = new CustomCanvas();
-        frame.add(canvas);
+//        frame.add(canvas);
 
         BufferedImage image = null;
         try {
@@ -22,6 +22,7 @@ public class ImageFun {
             e.printStackTrace();
         }
 
+        frame.setContentPane(new JLabel(new ImageIcon(image)));
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
@@ -33,51 +34,70 @@ public class ImageFun {
         int maxx = size.width - image.getWidth(), maxy = size.height - image.getHeight();
         float x = 0, y = 0, mx = 1, my = 1;
 
-        long start;
-        float offset = 0;
-        int skipCount = 0, skips = 3;
 
-        while(true){
-            start = System.currentTimeMillis();
-            frame.setSize(295,223);
-            if(skipCount % skips == 0) {
-                canvas.prepImage();
-                canvas.repaint();
-                skipCount %= skips;
-            }
-            skipCount++;
 
-            float delay = a - (System.currentTimeMillis() - start) + offset;
-            if(offset != 0){
-                offset = 0;
-            }
+        while(true) {
+            frame.setSize(295, 223);
 
-            Thread.sleep((int)( delay < 0 ? 0 : delay));
-            if(delay < 0){
-                offset = delay;
-            }
+            offsetImage(image);
+            frame.repaint();
+
             x = (mx * 5f + x);
             y = (my * 5f + y);
 
-            if(x < 0){
+            if (x < 0) {
                 mx = 1;
                 x = 0;
             }
-            if (x>maxx){
+            if (x > maxx) {
                 mx = -1;
                 x = maxx;
             }
-            if (y<0){
+            if (y < 0) {
                 my = 1;
                 y = 0;
             }
-            if (y>maxy){
+            if (y > maxy) {
                 my = -1;
                 y = maxy;
             }
+            frame.setLocation((int) x, (int) y);
 
-            frame.setLocation((int)x,(int)y);
+        }
 
+    }
+
+    public static void prepareImage(BufferedImage image){
+        for (int j = 0; j < image.getHeight(); j++) {
+            for (int i = 0; i < image.getWidth(); i++) {
+                int rc = (image.getRGB(i,j)>>16) & 0xFF;
+                int gc = (image.getRGB(i,j)>>8) & 0xFF;
+                int bc = (image.getRGB(i,j)) & 0xFF;
+
+                float[] hsb = new float[3];
+                hsb = Color.RGBtoHSB(rc, gc, bc, hsb);
+                int c = Color.HSBtoRGB((hsb[0] + ((float)i)/image.getWidth()) - ((float)j)/image.getHeight(), hsb[1] * 1.3f, hsb[2]);
+
+                image.setRGB(i, j, c);
+            }
+        }
+    }
+
+    public static void offsetImage(BufferedImage image){
+
+        for (int j = 10; j < image.getHeight()- 10; j++) {
+            for (int i = 25; i < image.getWidth() - 25; i++) {
+                int rc = (image.getRGB(i,j)>>16) & 0xFF;
+                int gc = (image.getRGB(i,j)>>8) & 0xFF;
+                int bc = (image.getRGB(i,j)) & 0xFF;
+
+                float[] hsb = new float[3];
+                hsb = Color.RGBtoHSB(rc, gc, bc, hsb);
+
+                int c = Color.HSBtoRGB((hsb[0] + 0.0001f), hsb[1], hsb[2]);
+
+                image.setRGB(i, j, c);
+            }
         }
 
     }

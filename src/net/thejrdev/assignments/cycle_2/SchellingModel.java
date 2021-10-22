@@ -45,7 +45,6 @@ public class SchellingModel {
         while (true) {
             Agent.moveAll();
             draw();
-            Thread.sleep(0);
         }
 
 
@@ -128,6 +127,7 @@ public class SchellingModel {
         }
 
         static void moveAll() {
+            Collections.shuffle(open);
             for (Agent agent : agents) {
                 agent.check();
                 if (!agent.happy) {
@@ -163,7 +163,7 @@ public class SchellingModel {
     public static void main(String[] args) throws InterruptedException {
 
         SchellingModel model = new SchellingModel();
-        model.init(0.98, 300, 0.11,0.5, 200,200, 4);
+        model.init(0.9, 3, 0,0.5, 200,200, 3);
 
         model.modelSeg();
 
