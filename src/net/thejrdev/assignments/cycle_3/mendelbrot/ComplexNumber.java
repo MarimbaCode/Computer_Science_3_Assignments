@@ -45,8 +45,6 @@ record ComplexNumber(double a, double b){
     public double magnitude(){
         return sqrt(pow(a, 2) + pow(b, 2));
     }
-
-    @Override
     public boolean equals(ComplexNumber o) {
         return a == o.a && b == o.b;
     }
