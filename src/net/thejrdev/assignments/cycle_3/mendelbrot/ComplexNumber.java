@@ -1,26 +1,24 @@
 package net.thejrdev.assignments.cycle_3.mendelbrot;
 
-import java.util.stream.Stream;
-
 import static java.lang.Math.*;
-record ComplexNumber(double a, double b){
+record ComplexNumber(double re, double im){
 
     public ComplexNumber add(ComplexNumber other){
         return new ComplexNumber(
-                a + other.a,
-                b + other.b
+                re + other.re,
+                im + other.im
         );
     }
     public ComplexNumber subtract(ComplexNumber other){
         return new ComplexNumber(
-                a - other.a,
-                b - other.b
+                re - other.re,
+                im - other.im
         );
     }
     public ComplexNumber multiply(ComplexNumber other){
         return new ComplexNumber(
-                a * other.a - b * other.b,
-                a * other.b + b + other.a
+                re * other.re - im * other.im,
+                re * other.im + im * other.re
         );
     }
     public ComplexNumber square(){
@@ -28,8 +26,8 @@ record ComplexNumber(double a, double b){
     }
     public ComplexNumber reciprocal(ComplexNumber other){
         return new ComplexNumber(
-                a / (pow(a, 2) + pow(b, 2)),
-                b / (pow(a, 2) + pow(b,2))
+                re / (pow(re, 2) + pow(im, 2)),
+                im / (pow(re, 2) + pow(im,2))
         );
     }
     public ComplexNumber divide(ComplexNumber other){
@@ -43,10 +41,10 @@ record ComplexNumber(double a, double b){
         return cn;
     }
     public double magnitude(){
-        return sqrt(pow(a, 2) + pow(b, 2));
+        return Math.hypot(re, im);
     }
     public boolean equals(ComplexNumber o) {
-        return a == o.a && b == o.b;
+        return re == o.re && im == o.im;
     }
 
 

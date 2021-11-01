@@ -11,17 +11,20 @@ public class MandelbrotSet {
     protected final Picture picture;
 
     protected double x1, x2, y1, y2, maximumMagn;
-    protected byte maximumIters;
-    protected byte[][] map;
+    protected short maximumIters;
+    protected short[][] map, set;
+    protected double xStep, yStep;
+
+    protected CalculationThreadManager manager;
 
 
     public static void main(String[] args) throws InterruptedException {
-        MandelbrotSet mandelbrotSet = new MandelbrotSet(600,600, Byte.MAX_VALUE, 10);
+        MandelbrotSet mandelbrotSet = new MandelbrotSet(600,600, (short) 255, 2);
 
         mandelbrotSet.run();
 
     }
-    public MandelbrotSet(int width, int height, byte maximum, double maximumMagn) {
+    public MandelbrotSet(int width, int height, short maximum, double maximumMagn) {
         this.width = width;
         this.height = height;
         this.maximumIters = maximum;
@@ -29,151 +32,152 @@ public class MandelbrotSet {
 
         picture = new Picture(width, height);
 
-        x1 = -3;
-        x2 = 1;
-        y1 = -2;
-        y2 = 2;
+        x1 = -1.5;
+        x2 = 0.5;
+        y1 = -1;
+        y2 = 1;
 
-        map = new byte[picture.height()][picture.width()];
+        map = new short[picture.height()][picture.width()];
+        set = new short[picture.height()][picture.width()];
     }
 
     public void run() throws InterruptedException {
 
-        MandelbrotSetCalculator calculator = new MandelbrotSetCalculator();
-        MandelbrotSetViewer viewer = new MandelbrotSetViewer();
-        InputHandler inputHandler = new InputHandler();
+        xStep = (x2 - x1) / width;
+        yStep = (y2 - y1) / height;
 
-        Thread inputThread = new Thread(inputHandler);
+        manager = new CalculationThreadManager();
+
+        InputManager inputManager = new InputManager();
+        Thread inputThread = new Thread(inputManager);
         inputThread.start();
-
-        Thread viewingThread = new Thread(viewer);
+        Viewer viewer = new Viewer();
+        viewer.run();
+        Thread viewingThread = new Thread(new Viewer());
         viewingThread.start();
 
-        while(true){
-            calculator.calculate(x1, y1, x2, y2);
-        }
-
-
-
     }
 
-    class MandelbrotSetCalculator {
+    class CalculationThreadManager {
+        public void run() throws InterruptedException {
 
-        byte[][] set;
 
-        public void calculate(double x1, double y1, double x2, double y2) throws InterruptedException {
 
-            set = new byte[height][width];
-
-            Thread[] threads = new Thread[1];
-
-            double diffY = y2 - y1;
+            Thread[] threads = new Thread[32];
 
             for (int i = 0; i < threads.length; i++) {
-
-                threads[i] = new Thread(
-                        new MandelbrotSetGenerator(
-                                x1,
-                                y1 + (diffY/threads.length) * i,
-                                x2,
-                                y1 + (diffY/threads.length) * (i+1),
-                                i,
-                                threads.length
-                        )
-                );
+                Thread thread = new Thread(new Calculator(i, threads.length));
+                threads[i] = thread;
             }
 
-            for (Thread t :
-                    threads) {
-                t.start();
+            for (Thread th : threads) {
+                th.start();
             }
-            for (Thread t: threads){
-                t.join();
-            }
-            map = set;
-        }
-
-        class MandelbrotSetGenerator implements Runnable{
-
-            double x1, y1, x2, y2, totalIter;
-            int pos;
-
-            public MandelbrotSetGenerator(double x1, double y1, double x2, double y2, int pos, int totalIter) {
-                this.x1 = x1;
-                this.y1 = y1;
-                this.x2 = x2;
-                this.y2 = y2;
-
-
-                this.pos = pos;
-                this.totalIter = totalIter;
-            }
-
-            @Override
-            public void run() {
-                double xStep = (x2 - x1)/width;
-                double yStep = (y2 - y1)/(height * totalIter);
-
-                for (int i = 0; i < width; i++) {
-                    for (int j = 0; j < height/totalIter; j++) {
-                        set[j + (int)((pos*height) / totalIter )][i] = calculate(new ComplexNumber(
-                                x1 + (xStep * i),
-                                y1 + (yStep * j)
-                        ));
-                    }
-                }
-
-            }
-
-            private byte calculate(ComplexNumber number){
-                ComplexNumber og = number;
-                byte iterations = 0;
-                while(number.magnitude() < maximumMagn && iterations < maximumIters){
-                    number = number.square().add(og);
-                    iterations++;
-                }
-                return iterations;
+            for (Thread th : threads) {
+                th.join();
             }
         }
     }
 
+    class Calculator implements Runnable{
 
+        int bandNumber;
+        int totalBands;
 
-    class MandelbrotSetViewer implements Runnable{
-
+        public Calculator(int bandNumber, int totalBands) {
+            this.bandNumber = bandNumber;
+            this.totalBands = totalBands;
+        }
 
         @Override
         public void run() {
 
+            for (int i = 0; i < width; i++) {
+                for (int j = height/totalBands * bandNumber; j < height/totalBands * (bandNumber + 1); j++) {
+                    set[j][i] = calculate(new ComplexNumber(
+                            x1 + (i * xStep),
+                            y1 + (j * yStep)
+                    ));
+                }
+            }
+            map = set;
+        }
+    }
+
+    class Viewer implements Runnable{
+
+        @Override
+        public void run() {
             while (true) {
-                for (int i = 0; i < picture.width(); i++) {
-                    for (int j = 0; j < picture.height(); j++) {
-                        picture.set(i, j, Color.getHSBColor(1, 0, 1-map[j][i]/127f));
+                for (int i = 0; i < width; i++) {
+                    for (int j = 0; j < height; j++) {
+                        Color color = new Color(255 - map[j][i], 255 - map[j][i], 255 - map[j][i]);
+
+                        picture.set(i, j, color);
                     }
                 }
                 picture.show();
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+
             }
         }
     }
 
-    class InputHandler implements Runnable{
+
+    public short calculate(ComplexNumber number){
+
+        ComplexNumber z = number;
+        for (short t = 0; t < maximumIters; t++) {
+            if (z.magnitude() > 2.0) return t;
+            z = z.multiply(z).add(number);
+        }
+
+        return 255;
+    }
+
+    class InputManager implements Runnable{
 
 
         @Override
         public void run() {
             Scanner scanner = new Scanner(System.in);
-            while(true){
-                x1 = scanner.nextDouble();
-                y1 = scanner.nextDouble();
-                x2 = scanner.nextDouble();
-                y2 = scanner.nextDouble();
-                System.out.println("--------");
+            try {
+                manager.run();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+            while (true){
+                double nx1 = scanner.nextDouble();
+                double ny1 = scanner.nextDouble();
+                double nx2 = scanner.nextDouble();
+                double ny2 = scanner.nextDouble();
+                System.out.println("-".repeat(12));
+
+                double x1Step, x2Step, y1Step, y2Step;
+
+                x1Step = (x1-nx1)/20.0;
+                x2Step = (x2-nx2)/20.0;
+                y1Step = (y1-ny1)/20.0;
+                y2Step = (y2-ny2)/20.0;
+
+
+                for (int i = 0; i < 20; i++) {
+                    x1 -= x1Step;
+                    x2 -= x2Step;
+                    y1 -= y1Step;
+                    y2 -= y2Step;
+                    xStep = (x2 - x1) / width;
+                    yStep = (y2 - y1) / height;
+
+                    try {
+                        manager.run();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
+            }
+
         }
     }
 
