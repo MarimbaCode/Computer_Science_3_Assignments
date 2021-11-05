@@ -111,8 +111,12 @@ public class MandelbrotSet {
             while (true) {
                 for (int i = 0; i < width; i++) {
                     for (int j = 0; j < height; j++) {
-                        Color color = new Color(255 - map[j][i], 255 - map[j][i], 255 - map[j][i]);
-
+                        Color color;
+                        if(map[j][i] == 255){
+                            color = Color.black;
+                        }else {
+                            color = Color.getHSBColor(map[j][i] / 255f + 0.5f, 1, 0.8f + ((float)Math.random())/5);
+                        }
                         picture.set(i, j, color);
                     }
                 }
