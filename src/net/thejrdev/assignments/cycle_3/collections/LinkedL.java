@@ -1,6 +1,9 @@
 package net.thejrdev.assignments.cycle_3.collections;
 
-public class LinkedL <T>{
+import java.util.Iterator;
+import java.util.function.Consumer;
+
+public class LinkedL <T> implements Iterable<T>{
 
     private int size;
 
@@ -48,6 +51,12 @@ public class LinkedL <T>{
         String list = head.toString();
         return "[" + list + "]";
     }
+
+    @Override
+    public Iterator<T> iterator() {
+        return new LinkedLIterator();
+    }
+
 
     static class Node<T>{
         private Node<T> next;
@@ -125,4 +134,20 @@ public class LinkedL <T>{
 
     }
 
+    class LinkedLIterator implements Iterator<T>{
+
+        private Node<T> current = head;
+
+        @Override
+        public boolean hasNext() {
+            return current != null;
+        }
+
+        @Override
+        public T next() {
+            T item = current.item;
+            current = current.next;
+            return item;
+        }
+    }
 }
