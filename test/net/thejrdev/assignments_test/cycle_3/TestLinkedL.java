@@ -71,4 +71,20 @@ public class TestLinkedL {
 
         assertEquals(3, num);
     }
+
+    @Test
+    public final void test5(){
+
+        LinkedL<Integer> list = new LinkedL<Integer>(1, 2, 3, 4, 5, 6, 7, 8, 9);
+
+        StringBuilder sb = new StringBuilder();
+
+        for(Integer i: list){
+            sb.append(i);
+        }
+
+        assertEquals("123456789", sb.toString());
+
+
+    }
 }
